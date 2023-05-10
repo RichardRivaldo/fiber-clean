@@ -6,6 +6,7 @@ import (
 	"fiber-clean/src/models"
 	"fiber-clean/src/repositories"
 	"net/http"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -37,6 +38,32 @@ func CreateNewCourseHandler(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(response)
 	}
 
+	image_file, _ := c.FormFile("image")
+	if err := c.SaveFile(image_file, image_file.Filename); err != nil {
+		response := dtos.Response{
+			Status:  http.StatusInternalServerError,
+			Message: "Failed registering course!",
+			Data: &fiber.Map{
+				"data": err.Error(),
+			},
+		}
+		return c.Status(http.StatusInternalServerError).JSON(response)
+	}
+
+	image_url, err := repositories.UploadImage(image_file.Filename)
+	os.Remove(image_file.Filename)
+	if err != nil {
+		response := dtos.Response{
+			Status:  http.StatusInternalServerError,
+			Message: "Failed uploading image!",
+			Data: &fiber.Map{
+				"data": err.Error(),
+			},
+		}
+		return c.Status(http.StatusInternalServerError).JSON(response)
+	}
+
+	course.Image = image_url
 	result, err := repositories.CreateNewCourse(course)
 	if err != nil {
 		response := dtos.Response{

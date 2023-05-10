@@ -1,8 +1,6 @@
 package models
 
 import (
-	"mime/multipart"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -12,6 +10,6 @@ type Course struct {
 	Category string             `bson:"category,omitempty" validate:"required"`
 	Price    int                `bson:"price,omitempty" validate:"required"`
 	Details  string             `bson:"details,omitempty"`
-	Image    multipart.File     `bson:"image,omitempty"`
+	Image    string             `bson:"image,omitempty"`
 	Exists   bool               `bson:"exists,omitempty"`
 }
