@@ -146,10 +146,56 @@ func DeleteCourseHandler(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(response)
 }
 
+func SearchCourseHandler(c *fiber.Ctx) error {
+	query := models.Query{}
+	if err := c.BodyParser(&query); err != nil {
+		response := dtos.Response{
+			Status:  http.StatusBadRequest,
+			Message: "Failed searching courses!",
+			Data: &fiber.Map{
+				"data": err.Error(),
+			},
+		}
+		return c.Status(http.StatusBadRequest).JSON(response)
+	}
+
+	if validationErr := configs.Validator.Struct(&query); validationErr != nil {
+		response := dtos.Response{
+			Status:  http.StatusBadRequest,
+			Message: "Failed searching courses!",
+			Data: &fiber.Map{
+				"data": validationErr.Error(),
+			},
+		}
+		return c.Status(http.StatusBadRequest).JSON(response)
+	}
+
+	result, err := repositories.QueryCourses(query.Filter, query.Projection, query.Sort)
+	if err != nil {
+		response := dtos.Response{
+			Status:  http.StatusInternalServerError,
+			Message: "Failed searching courses!",
+			Data: &fiber.Map{
+				"data": err.Error(),
+			},
+		}
+		return c.Status(http.StatusInternalServerError).JSON(response)
+	}
+
+	response := dtos.Response{
+		Status:  http.StatusOK,
+		Message: "Successfully searching courses!",
+		Data:    &fiber.Map{"data": result},
+	}
+	return c.Status(http.StatusOK).JSON(response)
+}
+
 func AddCourseRouter(router fiber.Router) {
 	root := "/courses"
 	router.Post(root, CreateNewCourseHandler)
-	router.Get(root, GetAllCoursesHandler)
 	router.Put(root+"/:course_id", UpdateCourseHandler)
 	router.Delete(root+"/:course_id", DeleteCourseHandler)
+
+	router.Get(root, GetAllCoursesHandler)
+	router.Post(root+"/search", SearchCourseHandler)
 }

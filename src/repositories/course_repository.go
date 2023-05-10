@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var courseCollection *mongo.Collection = configs.GetCollection(configs.DB, "courses")
@@ -22,12 +23,21 @@ func CreateNewCourse(course models.Course) (*mongo.InsertOneResult, error) {
 	return result, err
 }
 
-func queryCourses(filter interface{}) ([]*bson.M, error) {
+func QueryCourses(
+	filter interface{},
+	projection interface{},
+	sort interface{},
+) ([]*bson.M, error) {
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	var courses []*bson.M
-	cursor, err := courseCollection.Find(ctx, filter)
+
+	projectionOpts := options.Find().SetProjection(projection)
+	sortOpts := options.Find().SetSort(sort)
+
+	cursor, err := courseCollection.Find(ctx, filter, projectionOpts, sortOpts)
 	if err != nil {
 		return courses, err
 	}
@@ -41,7 +51,10 @@ func queryCourses(filter interface{}) ([]*bson.M, error) {
 }
 
 func GetAllCourses() ([]*bson.M, error) {
-	return queryCourses(bson.M{})
+	emptyFilterOpt := bson.M{"exists": true}
+	projectAllOpt := bson.M{}
+	defaultSortOpt := bson.M{}
+	return QueryCourses(emptyFilterOpt, projectAllOpt, defaultSortOpt)
 }
 
 func UpdateCourse(courseId string, course models.Course) (*mongo.UpdateResult, error) {
