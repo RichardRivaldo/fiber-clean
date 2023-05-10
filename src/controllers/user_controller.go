@@ -11,7 +11,9 @@ import (
 )
 
 func RegisterUserHandler(c *fiber.Ctx) error {
-	user := models.User{}
+	user := models.User{
+		Exists: true,
+	}
 
 	if err := c.BodyParser(&user); err != nil {
 		response := dtos.Response{
