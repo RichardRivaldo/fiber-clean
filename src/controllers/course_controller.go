@@ -3,6 +3,7 @@ package controllers
 import (
 	"fiber-clean/src/configs"
 	"fiber-clean/src/dtos"
+	"fiber-clean/src/middlewares"
 	"fiber-clean/src/models"
 	"fiber-clean/src/repositories"
 	"net/http"
@@ -219,9 +220,9 @@ func SearchCourseHandler(c *fiber.Ctx) error {
 
 func AddCourseRouter(router fiber.Router) {
 	root := "/courses"
-	router.Post(root, CreateNewCourseHandler)
-	router.Put(root+"/:course_id", UpdateCourseHandler)
-	router.Delete(root+"/:course_id", DeleteCourseHandler)
+	router.Post(root, middlewares.IsAdmin(CreateNewCourseHandler))
+	router.Put(root+"/:course_id", middlewares.IsAdmin(UpdateCourseHandler))
+	router.Delete(root+"/:course_id", middlewares.IsAdmin(DeleteCourseHandler))
 
 	router.Get(root, GetAllCoursesHandler)
 	router.Post(root+"/search", SearchCourseHandler)

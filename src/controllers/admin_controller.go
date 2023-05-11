@@ -3,6 +3,7 @@ package controllers
 import (
 	"fiber-clean/src/configs"
 	"fiber-clean/src/dtos"
+	"fiber-clean/src/middlewares"
 	"fiber-clean/src/models"
 	"fiber-clean/src/repositories"
 	"net/http"
@@ -101,7 +102,8 @@ func DeleteUserHandler(c *fiber.Ctx) error {
 
 func AddAdminRouter(router fiber.Router) {
 	root := "/admins"
-	router.Get(root+"/statistics", GetStatisticsHandler)
-	router.Post(root, RegisterAdminHandler)
-	router.Delete(root+"/delete_user/:user_id", DeleteUserHandler)
+
+	router.Get(root+"/statistics", middlewares.IsAdmin(GetStatisticsHandler))
+	router.Post(root, middlewares.IsAdmin(RegisterAdminHandler))
+	router.Delete(root+"/delete_user/:user_id", middlewares.IsAdmin(DeleteUserHandler))
 }
