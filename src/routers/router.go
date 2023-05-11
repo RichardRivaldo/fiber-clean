@@ -12,4 +12,5 @@ func SetRouter(app *fiber.App) {
 	controllers.AddUserRouter(root)
 	controllers.AddAdminRouter(root)
 	controllers.AddCourseRouter(root)
+	controllers.AddAuthRouter(root)
 }
